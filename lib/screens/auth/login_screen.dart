@@ -94,7 +94,7 @@ class _LoginScreenState extends State<LoginScreen> {
               ),
               const SizedBox(height: 16),
               Text(
-                'Infinite Challenge',
+                '디깅유학',
                 style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,

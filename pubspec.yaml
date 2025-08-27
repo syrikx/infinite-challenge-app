@@ -1,9 +1,9 @@
-name: infinite_challenge
-description: A hybrid app for infinitechallenge.ca - educational calculus materials
+name: digging_yuhak
+description: 디깅유학 - 유학 정보 매거진 및 커뮤니티 앱
 
 publish_to: 'none'
 
-version: 2.0.0+2
+version: 2.1.0+3
 
 environment:
   sdk: '>=3.0.0 <4.0.0'

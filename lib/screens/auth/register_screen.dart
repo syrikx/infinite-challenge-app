@@ -102,7 +102,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
               // Header
               Text(
-                'Infinite Challenge 회원가입',
+                '디깅유학 회원가입',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                   color: Theme.of(context).primaryColor,
                   fontWeight: FontWeight.bold,

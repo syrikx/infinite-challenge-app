@@ -24,7 +24,7 @@ class InfiniteChallengeApp extends StatelessWidget {
         ChangeNotifierProvider(create: (_) => AuthProvider()),
       ],
       child: MaterialApp(
-        title: 'Infinite Challenge',
+        title: '디깅유학',
         theme: AppTheme.lightTheme,
         home: const SplashScreen(),
         debugShowCheckedModeBanner: false,

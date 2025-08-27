@@ -46,15 +46,16 @@ class _SplashScreenState extends State<SplashScreen> {
             ),
             const SizedBox(height: 24),
             Text(
-              'Infinite Challenge',
-              style: Theme.of(context).textTheme.headlineMedium?.copyWith(
+              '디깅유학',
+              style: Theme.of(context).textTheme.headlineLarge?.copyWith(
                 color: Colors.white,
                 fontWeight: FontWeight.bold,
+                fontSize: 32,
               ),
             ),
             const SizedBox(height: 8),
             Text(
-              '교육용 미적분 교재',
+              '유학 정보 매거진 & 커뮤니티',
               style: Theme.of(context).textTheme.titleMedium?.copyWith(
                 color: Colors.white70,
               ),

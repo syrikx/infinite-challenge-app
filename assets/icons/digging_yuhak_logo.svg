@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="256" fill="#2E7D32"/>
+  
+  <!-- Inner Circle -->
+  <circle cx="256" cy="256" r="220" fill="#4CAF50"/>
+  
+  <!-- Book Icon -->
+  <rect x="180" y="180" width="152" height="20" rx="10" fill="white"/>
+  <rect x="180" y="220" width="152" height="80" rx="8" fill="white"/>
+  <rect x="190" y="230" width="40" height="4" rx="2" fill="#4CAF50"/>
+  <rect x="190" y="240" width="60" height="4" rx="2" fill="#4CAF50"/>
+  <rect x="190" y="250" width="50" height="4" rx="2" fill="#4CAF50"/>
+  <rect x="190" y="260" width="70" height="4" rx="2" fill="#4CAF50"/>
+  <rect x="190" y="270" width="45" height="4" rx="2" fill="#4CAF50"/>
+  <rect x="190" y="280" width="65" height="4" rx="2" fill="#4CAF50"/>
+  
+  <!-- Globe Icon -->
+  <circle cx="280" cy="260" r="25" stroke="white" stroke-width="3" fill="none"/>
+  <ellipse cx="280" cy="260" rx="15" ry="25" stroke="white" stroke-width="2" fill="none"/>
+  <line x1="255" y1="260" x2="305" y2="260" stroke="white" stroke-width="2"/>
+  
+  <!-- Graduation Cap -->
+  <polygon points="256,320 220,340 220,350 256,330 292,350 292,340" fill="white"/>
+  <rect x="250" y="315" width="12" height="25" rx="6" fill="white"/>
+  <circle cx="256" cy="310" r="8" fill="white"/>
+  
+  <!-- Text Shadow -->
+  <text x="256" y="380" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="#1B5E20" opacity="0.3">디깅유학</text>
+  
+  <!-- Main Text -->
+  <text x="256" y="375" font-family="Arial, sans-serif" font-size="36" font-weight="bold" text-anchor="middle" fill="white">디깅유학</text>
+</svg>
