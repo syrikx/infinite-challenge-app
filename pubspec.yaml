@@ -45,3 +45,7 @@ flutter:
   assets:
     - assets/images/
     - assets/icons/
+    - assets/images/books/
+    - assets/images/books/calculus_12/
+    - assets/images/books/calculus_12/thumbnails/
+    - assets/images/books/calculus_12/full/

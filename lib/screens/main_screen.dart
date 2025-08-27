@@ -4,6 +4,7 @@ import '../providers/auth_provider.dart';
 import 'home_screen.dart';
 import 'magazine/magazine_list_screen.dart';
 import 'community/community_list_screen.dart';
+import 'books/book_gallery_screen.dart';
 import 'admin/admin_panel_screen.dart';
 import 'profile/profile_screen.dart';
 import 'auth/login_screen.dart';
@@ -69,6 +70,14 @@ class _MainScreenState extends State<MainScreen> {
         bottomNavigationBarItem: const BottomNavigationBarItem(
           icon: Icon(Icons.article),
           label: '매거진',
+        ),
+        requiresAuth: false,
+      ),
+      _TabInfo(
+        widget: const BookGalleryScreen(),
+        bottomNavigationBarItem: const BottomNavigationBarItem(
+          icon: Icon(Icons.menu_book),
+          label: '교재',
         ),
         requiresAuth: false,
       ),

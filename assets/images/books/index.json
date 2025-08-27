@@ -1,0 +1,35 @@
+{
+  "generated_at": "$(date -u +%Y-%m-%dT%H:%M:%S.000Z)",
+  "books": {
+    "calculus_12": {
+      "name": "Calculus 12",
+      "description": "Calculus 12 교재",
+      "total_pages": 28,
+      "assets_path": "assets/images/books/calculus_12"
+    },
+    "calculus_bc": {
+      "name": "Calculus BC", 
+      "description": "Calculus BC 교재",
+      "total_pages": 28,
+      "assets_path": "assets/images/books/calculus_bc"
+    },
+    "ap_calculus": {
+      "name": "AP Calculus",
+      "description": "AP Calculus 교재", 
+      "total_pages": 28,
+      "assets_path": "assets/images/books/ap_calculus"
+    },
+    "pre_calculus": {
+      "name": "Pre-Calculus",
+      "description": "Pre-Calculus 교재",
+      "total_pages": 28, 
+      "assets_path": "assets/images/books/pre_calculus"
+    },
+    "pre_calculus_10": {
+      "name": "Pre-Calculus 10",
+      "description": "Pre-Calculus 10 교재",
+      "total_pages": 28,
+      "assets_path": "assets/images/books/pre_calculus_10"
+    }
+  }
+}
