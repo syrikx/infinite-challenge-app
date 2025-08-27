@@ -28,14 +28,14 @@ class User {
       id: json['id'],
       email: json['email'],
       username: json['username'],
-      displayName: json['display_name'],
+      displayName: json['displayName'] ?? json['display_name'], // 두 형식 모두 지원
       role: UserRole.values.byName(json['role']),
-      createdAt: DateTime.parse(json['created_at']),
-      lastLoginAt: json['last_login_at'] != null 
-        ? DateTime.parse(json['last_login_at']) 
-        : null,
-      isActive: json['is_active'] ?? true,
-      profileImageUrl: json['profile_image_url'],
+      createdAt: DateTime.parse(json['createdAt'] ?? json['created_at']),
+      lastLoginAt: json['lastLoginAt'] != null 
+        ? DateTime.parse(json['lastLoginAt']) 
+        : (json['last_login_at'] != null ? DateTime.parse(json['last_login_at']) : null),
+      isActive: json['isActive'] ?? json['is_active'] ?? true,
+      profileImageUrl: json['profileImageUrl'] ?? json['profile_image_url'],
       bio: json['bio'],
     );
   }
@@ -45,12 +45,12 @@ class User {
       'id': id,
       'email': email,
       'username': username,
-      'display_name': displayName,
+      'displayName': displayName,
       'role': role.name,
-      'created_at': createdAt.toIso8601String(),
-      'last_login_at': lastLoginAt?.toIso8601String(),
-      'is_active': isActive,
-      'profile_image_url': profileImageUrl,
+      'createdAt': createdAt.toIso8601String(),
+      'lastLoginAt': lastLoginAt?.toIso8601String(),
+      'isActive': isActive,
+      'profileImageUrl': profileImageUrl,
       'bio': bio,
     };
   }
@@ -116,7 +116,7 @@ class UserRegistration {
     return {
       'email': email,
       'username': username,
-      'display_name': displayName,
+      'displayName': displayName,
       'password': password,
       'bio': bio,
       'reason': reason,
