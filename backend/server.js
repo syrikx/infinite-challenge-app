@@ -7,7 +7,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors());
@@ -33,14 +33,15 @@ const userRoutes = require('./routes/users');
 const magazineRoutes = require('./routes/magazines');
 const communityRoutes = require('./routes/community');
 
-// Routes
-app.use('/api/auth', authRoutes);
-app.use('/api/users', userRoutes);
-app.use('/api/magazines', magazineRoutes);
-app.use('/api/community', communityRoutes);
+// Routes with base path support
+const basePath = process.env.BASE_PATH || '';
+app.use(`${basePath}/api/auth`, authRoutes);
+app.use(`${basePath}/api/users`, userRoutes);
+app.use(`${basePath}/api/magazines`, magazineRoutes);
+app.use(`${basePath}/api/community`, communityRoutes);
 
 // Health check endpoint
-app.get('/health', (req, res) => {
+app.get(`${basePath}/health`, (req, res) => {
   res.status(200).json({
     status: 'OK',
     message: 'DiggingYuhak API Server is running',

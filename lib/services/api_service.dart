@@ -6,7 +6,7 @@ import '../models/magazine_article.dart';
 import '../models/community_post.dart';
 
 class ApiService {
-  static const String baseUrl = 'http://localhost:3000/api';
+  static const String baseUrl = 'https://gunsiya.com/youhak/api';
   static const String _tokenKey = 'auth_token';
   
   String? _cachedToken;
