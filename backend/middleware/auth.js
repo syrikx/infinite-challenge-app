@@ -53,7 +53,7 @@ const authenticateToken = async (req, res, next) => {
   }
 };
 
-// Check if user has required role
+// Check if user has required role (deprecated - use requirePermission instead)
 const requireRole = (roles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -74,31 +74,89 @@ const requireRole = (roles) => {
   };
 };
 
-// Check if user can create posts
+// Check if user has required permission (NEW - 권한 기반 체크)
+const requirePermission = (permission) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        error: 'Authentication required',
+        message: 'Please login first'
+      });
+    }
+
+    if (!req.user.hasPermission(permission)) {
+      return res.status(403).json({
+        error: 'Insufficient permissions',
+        message: `This action requires ${permission} permission`
+      });
+    }
+
+    next();
+  };
+};
+
+// Check if user has minimum role level (NEW - 레벨 기반 체크)
+const requireRoleLevel = (minimumLevel) => {
+  return (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        error: 'Authentication required',
+        message: 'Please login first'
+      });
+    }
+
+    if (!req.user.hasRoleLevel(minimumLevel)) {
+      const levelName = typeof minimumLevel === 'string' ? minimumLevel : `level ${minimumLevel}`;
+      return res.status(403).json({
+        error: 'Insufficient permissions',
+        message: `This action requires ${levelName} or higher`
+      });
+    }
+
+    next();
+  };
+};
+
+// Specific permission middlewares
+const canReadMagazine = requirePermission('READ_MAGAZINE');
+const canWriteMagazine = requirePermission('WRITE_MAGAZINE');
+const canEditMagazine = requirePermission('EDIT_MAGAZINE');
+const canDeleteMagazine = requirePermission('DELETE_MAGAZINE');
+
+const canReadCommunity = requirePermission('READ_COMMUNITY');
+const canWriteCommunity = requirePermission('WRITE_COMMUNITY');
+const canEditCommunity = requirePermission('EDIT_COMMUNITY');
+const canDeleteCommunity = requirePermission('DELETE_COMMUNITY');
+const canModerateCommunity = requirePermission('MODERATE_COMMUNITY');
+
+const canManageUsers = requirePermission('MANAGE_USERS');
+const canChangeRoles = requirePermission('CHANGE_ROLES');
+const canViewAnalytics = requirePermission('VIEW_ANALYTICS');
+const canSystemSettings = requirePermission('SYSTEM_SETTINGS');
+
+// 기존 호환성을 위한 미들웨어 (deprecated - 새로운 권한 시스템 사용 권장)
 const canCreatePosts = (req, res, next) => {
-  if (!req.user || !req.user.canCreatePosts) {
+  if (!req.user || !req.user.hasPermission('WRITE_COMMUNITY')) {
     return res.status(403).json({
       error: 'Insufficient permissions',
-      message: 'You need member privileges or higher to create posts'
+      message: 'You need user privileges or higher to create posts'
     });
   }
   next();
 };
 
-// Check if user can moderate
 const canModerate = (req, res, next) => {
-  if (!req.user || !req.user.canModerate) {
+  if (!req.user || !req.user.hasPermission('MODERATE_COMMUNITY')) {
     return res.status(403).json({
       error: 'Insufficient permissions',
-      message: 'You need moderator privileges or higher for this action'
+      message: 'You need operator privileges or higher for this action'
     });
   }
   next();
 };
 
-// Check if user is admin
 const isAdmin = (req, res, next) => {
-  if (!req.user || !req.user.isAdmin) {
+  if (!req.user || req.user.role !== 'admin') {
     return res.status(403).json({
       error: 'Admin access required',
       message: 'This action requires administrator privileges'
@@ -107,8 +165,69 @@ const isAdmin = (req, res, next) => {
   next();
 };
 
+// 본인 컨텐츠만 수정/삭제 가능하도록 체크
+const isOwnerOrModerator = (getResourceUserId) => {
+  return async (req, res, next) => {
+    if (!req.user) {
+      return res.status(401).json({
+        error: 'Authentication required',
+        message: 'Please login first'
+      });
+    }
+
+    try {
+      const resourceUserId = await getResourceUserId(req);
+      
+      // 본인이거나 모더레이션 권한이 있으면 허용
+      if (req.user._id.toString() === resourceUserId.toString() || 
+          req.user.hasPermission('MODERATE_COMMUNITY')) {
+        next();
+      } else {
+        return res.status(403).json({
+          error: 'Insufficient permissions',
+          message: 'You can only modify your own content'
+        });
+      }
+    } catch (error) {
+      return res.status(500).json({
+        error: 'Permission check error',
+        message: error.message
+      });
+    }
+  };
+};
+
 module.exports = {
+  // 기본 인증
   authenticateToken,
+  
+  // 새로운 권한 시스템 (권장)
+  requirePermission,
+  requireRoleLevel,
+  
+  // 매거진 권한
+  canReadMagazine,
+  canWriteMagazine,
+  canEditMagazine,
+  canDeleteMagazine,
+  
+  // 커뮤니티 권한
+  canReadCommunity,
+  canWriteCommunity,
+  canEditCommunity,
+  canDeleteCommunity,
+  canModerateCommunity,
+  
+  // 관리 권한
+  canManageUsers,
+  canChangeRoles,
+  canViewAnalytics,
+  canSystemSettings,
+  
+  // 소유권 체크
+  isOwnerOrModerator,
+  
+  // 기존 호환성 (deprecated)
   requireRole,
   canCreatePosts,
   canModerate,

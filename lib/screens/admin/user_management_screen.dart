@@ -12,27 +12,30 @@ class UserManagementScreen extends StatefulWidget {
 }
 
 class _UserManagementScreenState extends State<UserManagementScreen> {
-  List<User> _pendingUsers = [];
+  List<User> _allUsers = [];
+  List<User> _filteredUsers = [];
   bool _isLoading = true;
+  String _selectedFilter = 'pending'; // 'all', 'pending', 'active'
 
   @override
   void initState() {
     super.initState();
-    _loadPendingUsers();
+    _loadAllUsers();
   }
 
-  Future<void> _loadPendingUsers() async {
+  Future<void> _loadAllUsers() async {
     setState(() {
       _isLoading = true;
     });
 
     try {
       final authProvider = Provider.of<AuthProvider>(context, listen: false);
-      final users = await authProvider.getPendingUsers();
+      final users = await authProvider.getAllUsers();
       
       if (mounted) {
         setState(() {
-          _pendingUsers = users;
+          _allUsers = users;
+          _filterUsers();
           _isLoading = false;
         });
       }
@@ -49,16 +52,106 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
     }
   }
 
+  void _filterUsers() {
+    switch (_selectedFilter) {
+      case 'pending':
+        _filteredUsers = _allUsers.where((user) => user.role == UserRole.pending).toList();
+        break;
+      case 'active':
+        _filteredUsers = _allUsers.where((user) => user.role != UserRole.pending).toList();
+        break;
+      case 'all':
+      default:
+        _filteredUsers = List.from(_allUsers);
+        break;
+    }
+  }
+
+  // 역할 선택 다이얼로그
+  Future<UserRole?> _showRoleSelectionDialog() async {
+    return await showDialog<UserRole>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('사용자 역할 선택'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: UserRole.values.where((role) => role != UserRole.pending).map((role) {
+            return ListTile(
+              title: Text(_getRoleDisplayName(role)),
+              subtitle: Text(_getRoleDescription(role)),
+              onTap: () => Navigator.of(context).pop(role),
+            );
+          }).toList(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('취소'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // 사용자 역할 변경 다이얼로그
+  Future<void> _showUserRoleChangeDialog(User user) async {
+    final selectedRole = await _showRoleSelectionDialog();
+    if (selectedRole == null || selectedRole == user.role) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('역할 변경'),
+        content: Text(
+          '${user.displayName}님의 역할을 "${_getRoleDisplayName(user.role)}"에서 "${_getRoleDisplayName(selectedRole)}"로 변경하시겠습니까?'
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(false),
+            child: const Text('취소'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(true),
+            child: const Text('변경'),
+          ),
+        ],
+      ),
+    );
+
+    if (confirmed == true) {
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final result = await authProvider.changeUserRole(user.id, selectedRole);
+      
+      if (result.isSuccess) {
+        Fluttertoast.showToast(
+          msg: '${user.displayName}님의 역할이 변경되었습니다',
+          backgroundColor: Colors.green,
+        );
+        _loadAllUsers();
+      } else {
+        Fluttertoast.showToast(
+          msg: result.message,
+          backgroundColor: Colors.red,
+        );
+      }
+    }
+  }
+
   Future<void> _approveUser(String userId, String userName) async {
+    // 역할 선택 다이얼로그 표시
+    final selectedRole = await _showRoleSelectionDialog();
+    if (selectedRole == null) return;
+    
     final authProvider = Provider.of<AuthProvider>(context, listen: false);
-    final result = await authProvider.approveUser(userId);
+    final result = await authProvider.approveUserWithRole(userId, selectedRole);
     
     if (result.isSuccess) {
+      final roleDisplayName = _getRoleDisplayName(selectedRole);
       Fluttertoast.showToast(
-        msg: '$userName님의 가입이 승인되었습니다',
+        msg: '$userName님을 $roleDisplayName로 승인했습니다',
         backgroundColor: Colors.green,
       );
-      _loadPendingUsers();
+      _loadAllUsers();
     } else {
       Fluttertoast.showToast(
         msg: result.message,
@@ -96,13 +189,58 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
           msg: '$userName님의 가입이 거부되었습니다',
           backgroundColor: Colors.orange,
         );
-        _loadPendingUsers();
+        _loadAllUsers();
       } else {
         Fluttertoast.showToast(
           msg: result.message,
           backgroundColor: Colors.red,
         );
       }
+    }
+  }
+
+  String _getRoleDisplayName(UserRole role) {
+    switch (role) {
+      case UserRole.pending:
+        return '승인 대기';
+      case UserRole.freeUser:
+        return '무료사용자';
+      case UserRole.user:
+        return '사용자';
+      case UserRole.operator:
+        return '운영자';
+      case UserRole.admin:
+        return '관리자';
+    }
+  }
+
+  String _getRoleDescription(UserRole role) {
+    switch (role) {
+      case UserRole.pending:
+        return '관리자 승인 대기 중';
+      case UserRole.freeUser:
+        return '매거진 및 커뮤니티 보기만 가능';
+      case UserRole.user:
+        return '커뮤니티 쓰기 가능';
+      case UserRole.operator:
+        return '매거진 작성, 수정 가능';
+      case UserRole.admin:
+        return '모든 기능과 권한 변경 가능';
+    }
+  }
+
+  Color _getRoleColor(UserRole role) {
+    switch (role) {
+      case UserRole.pending:
+        return Colors.orange;
+      case UserRole.freeUser:
+        return Colors.grey;
+      case UserRole.user:
+        return Colors.blue;
+      case UserRole.operator:
+        return Colors.purple;
+      case UserRole.admin:
+        return Colors.red;
     }
   }
 
@@ -113,30 +251,63 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
         title: const Text('사용자 관리'),
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.filter_list),
+            onSelected: (value) {
+              setState(() {
+                _selectedFilter = value;
+                _filterUsers();
+              });
+            },
+            itemBuilder: (context) => [
+              const PopupMenuItem(
+                value: 'pending',
+                child: Text('승인 대기만'),
+              ),
+              const PopupMenuItem(
+                value: 'active',
+                child: Text('활성 사용자만'),
+              ),
+              const PopupMenuItem(
+                value: 'all',
+                child: Text('전체'),
+              ),
+            ],
+          ),
+        ],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : RefreshIndicator(
-              onRefresh: _loadPendingUsers,
-              child: _pendingUsers.isEmpty
-                  ? const Center(
+              onRefresh: _loadAllUsers,
+              child: _filteredUsers.isEmpty
+                  ? Center(
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Icon(Icons.check_circle, size: 64, color: Colors.green),
-                          SizedBox(height: 16),
+                          Icon(
+                            _selectedFilter == 'pending' 
+                              ? Icons.check_circle 
+                              : Icons.people,
+                            size: 64, 
+                            color: Colors.grey,
+                          ),
+                          const SizedBox(height: 16),
                           Text(
-                            '승인 대기 중인 사용자가 없습니다',
-                            style: TextStyle(fontSize: 16, color: Colors.grey),
+                            _selectedFilter == 'pending'
+                              ? '승인 대기 중인 사용자가 없습니다'
+                              : '조건에 맞는 사용자가 없습니다',
+                            style: const TextStyle(fontSize: 16, color: Colors.grey),
                           ),
                         ],
                       ),
                     )
                   : ListView.builder(
                       padding: const EdgeInsets.all(16),
-                      itemCount: _pendingUsers.length,
+                      itemCount: _filteredUsers.length,
                       itemBuilder: (context, index) {
-                        final user = _pendingUsers[index];
+                        final user = _filteredUsers[index];
                         return Card(
                           margin: const EdgeInsets.only(bottom: 16),
                           child: Padding(
@@ -147,7 +318,7 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 Row(
                                   children: [
                                     CircleAvatar(
-                                      backgroundColor: Theme.of(context).primaryColor,
+                                      backgroundColor: _getRoleColor(user.role),
                                       child: Text(
                                         user.displayName.isNotEmpty
                                             ? user.displayName[0].toUpperCase()
@@ -163,11 +334,31 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            user.displayName,
-                                            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                                              fontWeight: FontWeight.bold,
-                                            ),
+                                          Row(
+                                            children: [
+                                              Text(
+                                                user.displayName,
+                                                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                              ),
+                                              const SizedBox(width: 8),
+                                              Container(
+                                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                                                decoration: BoxDecoration(
+                                                  color: _getRoleColor(user.role),
+                                                  borderRadius: BorderRadius.circular(12),
+                                                ),
+                                                child: Text(
+                                                  _getRoleDisplayName(user.role),
+                                                  style: const TextStyle(
+                                                    color: Colors.white,
+                                                    fontSize: 12,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                ),
+                                              ),
+                                            ],
                                           ),
                                           Text(
                                             '@${user.username}',
@@ -205,33 +396,61 @@ class _UserManagementScreenState extends State<UserManagementScreen> {
                                 ),
                                 
                                 const SizedBox(height: 16),
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: ElevatedButton.icon(
-                                        onPressed: () => _approveUser(user.id, user.displayName),
-                                        icon: const Icon(Icons.check),
-                                        label: const Text('승인'),
-                                        style: ElevatedButton.styleFrom(
-                                          backgroundColor: Colors.green,
-                                          foregroundColor: Colors.white,
+                                if (user.role == UserRole.pending) ...[
+                                  // 승인 대기 사용자 버튼
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: ElevatedButton.icon(
+                                          onPressed: () => _approveUser(user.id, user.displayName),
+                                          icon: const Icon(Icons.check),
+                                          label: const Text('승인'),
+                                          style: ElevatedButton.styleFrom(
+                                            backgroundColor: Colors.green,
+                                            foregroundColor: Colors.white,
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: OutlinedButton.icon(
-                                        onPressed: () => _rejectUser(user.id, user.displayName),
-                                        icon: const Icon(Icons.close),
-                                        label: const Text('거부'),
-                                        style: OutlinedButton.styleFrom(
-                                          foregroundColor: Colors.red,
-                                          side: const BorderSide(color: Colors.red),
+                                      const SizedBox(width: 12),
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () => _rejectUser(user.id, user.displayName),
+                                          icon: const Icon(Icons.close),
+                                          label: const Text('거부'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Colors.red,
+                                            side: const BorderSide(color: Colors.red),
+                                          ),
                                         ),
                                       ),
-                                    ),
-                                  ],
-                                ),
+                                    ],
+                                  ),
+                                ] else ...[
+                                  // 활성 사용자 버튼
+                                  Row(
+                                    children: [
+                                      Expanded(
+                                        child: OutlinedButton.icon(
+                                          onPressed: () => _showUserRoleChangeDialog(user),
+                                          icon: const Icon(Icons.edit),
+                                          label: const Text('역할 변경'),
+                                          style: OutlinedButton.styleFrom(
+                                            foregroundColor: Colors.blue,
+                                            side: const BorderSide(color: Colors.blue),
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      Text(
+                                        _getRoleDescription(user.role),
+                                        style: TextStyle(
+                                          color: Colors.grey[600],
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ],
                               ],
                             ),
                           ),
