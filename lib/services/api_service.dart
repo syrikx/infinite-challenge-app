@@ -146,6 +146,18 @@ class ApiService {
     );
   }
 
+  Future<List<User>> getAllUsers() async {
+    final response = await http.get(
+      Uri.parse('$baseUrl/users'),
+      headers: await _getHeaders(),
+    );
+
+    final data = _handleResponse(response);
+    return (data['users'] as List)
+        .map((user) => User.fromJson(user))
+        .toList();
+  }
+
   Future<void> changeUserRole(String userId, String role) async {
     await http.put(
       Uri.parse('$baseUrl/users/$userId/role'),

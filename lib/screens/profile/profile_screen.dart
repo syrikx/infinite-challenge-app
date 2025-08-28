@@ -244,16 +244,14 @@ class ProfileScreen extends StatelessWidget {
 
   String _getRoleName(UserRole role) {
     switch (role) {
-      case UserRole.guest:
-        return '게스트';
       case UserRole.pending:
         return '승인 대기';
-      case UserRole.member:
-        return '일반 회원';
-      case UserRole.editor:
-        return '에디터';
-      case UserRole.moderator:
-        return '모더레이터';
+      case UserRole.freeUser:
+        return '무료사용자';
+      case UserRole.user:
+        return '사용자';
+      case UserRole.operator:
+        return '운영자';
       case UserRole.admin:
         return '관리자';
     }
@@ -261,15 +259,13 @@ class ProfileScreen extends StatelessWidget {
 
   Color _getRoleColor(UserRole role) {
     switch (role) {
-      case UserRole.guest:
-        return Colors.grey;
       case UserRole.pending:
         return Colors.orange;
-      case UserRole.member:
+      case UserRole.freeUser:
+        return Colors.grey;
+      case UserRole.user:
         return Colors.blue;
-      case UserRole.editor:
-        return Colors.green;
-      case UserRole.moderator:
+      case UserRole.operator:
         return Colors.purple;
       case UserRole.admin:
         return Colors.red;

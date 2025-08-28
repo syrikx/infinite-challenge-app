@@ -137,6 +137,33 @@ class AuthService {
     }
   }
 
+  Future<List<User>> getAllUsers() async {
+    if (!isAdmin) {
+      throw Exception('권한이 없습니다.');
+    }
+    try {
+      return await _api.getAllUsers();
+    } catch (e) {
+      throw Exception('사용자 목록을 불러오는데 실패했습니다: $e');
+    }
+  }
+
+  Future<AuthResult> approveUserWithRole(String userId, UserRole role) async {
+    if (!isAdmin) {
+      return AuthResult.error('권한이 없습니다.');
+    }
+
+    try {
+      await _api.approveUser(userId, role.name);
+      return AuthResult.success('사용자가 승인되었습니다.');
+    } catch (e) {
+      if (e is ApiException) {
+        return AuthResult.error(e.message);
+      }
+      return AuthResult.error('승인 중 오류가 발생했습니다: $e');
+    }
+  }
+
   Future<AuthResult> changeUserRole(String userId, UserRole newRole) async {
     if (!isAdmin) {
       return AuthResult.error('권한이 없습니다.');
