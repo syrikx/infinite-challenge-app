@@ -207,6 +207,15 @@ class ProfileScreen extends StatelessWidget {
                           );
                         },
                       ),
+                      const Divider(height: 1),
+                      ListTile(
+                        leading: const Icon(Icons.exit_to_app, color: Colors.red),
+                        title: const Text(
+                          '로그아웃',
+                          style: TextStyle(color: Colors.red),
+                        ),
+                        onTap: () => _showLogoutDialog(context, authProvider),
+                      ),
                     ],
                   ),
                 ),

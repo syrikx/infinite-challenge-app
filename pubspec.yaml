@@ -3,7 +3,7 @@ description: 디깅유학 - 유학 정보 매거진 및 커뮤니티 앱
 
 publish_to: 'none'
 
-version: 2.4.0+4
+version: 2.4.1+5
 
 environment:
   sdk: '>=3.0.0 <4.0.0'
